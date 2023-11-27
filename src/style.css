@@ -1,0 +1,70 @@
+@font-face {
+  font-family: 'Pixel';
+  src: url('./assets/Retro\ Gaming.ttf');
+}
+
+* {
+  font-family: 'Pixel';
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root,
+.app {
+  min-height: 100vh;
+
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: 75px 1fr;
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #282828;
+  color: #33FF00;
+}
+
+.gameArea {
+  display: grid;
+  justify-content: center;
+  grid-template-rows: min-content;
+
+  padding: 15px;
+
+  background-color: #383838;
+}
+
+.game {
+  display: grid;
+  grid-template-rows: 500px 100px;
+  grid-template-columns: 1000px;
+}
+
+.gameCanvas {
+  width: 100%;
+}
+
+.gameControls>button {}
