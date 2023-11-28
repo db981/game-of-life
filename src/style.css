@@ -56,16 +56,22 @@ header {
   justify-content: center;
   grid-template-rows: min-content;
 
-  padding: 15px;
+  padding: 10px;
 
   background-color: #383838;
 }
 
 .game {
   display: grid;
-  grid-template-rows: auto 60px;
+  grid-template-rows: min-content auto 60px;
   grid-template-columns: 1000px;
   gap: 10px;
+}
+
+.generationCounter {
+  justify-self: center;
+
+  color: #33FF00;
 }
 
 .gameCanvas:hover {

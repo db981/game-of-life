@@ -1,21 +1,15 @@
 import { useEffect, useRef, useState } from "react"
 
 export default function Game() {
-  const cellSize = 50;
-  const simulationPeriodMs = 1000;
+  const cellSize = 10;
+  const simulationPeriodMs = 500;
   const canvas = useRef();
+  const [generation, setGeneration] = useState(0);
   const [cells, setCells] = useState();
   const [runSimulation, setRunSimulation] = useState(false);
 
-  useEffect(() => { //initialize cells array
-    let { height, width } = canvas.current.getBoundingClientRect();
-    let rows = Math.floor(height / cellSize);
-    let cols = Math.floor(width / cellSize);
-    let arr = new Array(cols).fill(false);
-    for (let i = 0; i < arr.length; i++) {
-      arr[i] = new Array(rows).fill(false);
-    }
-    setCells(arr);
+  useEffect(() => {
+    initializeCells();
   }, []);
 
   useEffect(() => { //redraw immediately on cells change
@@ -37,6 +31,18 @@ export default function Game() {
     }
   }, [runSimulation, cells]);
 
+  const initializeCells = () => { //initialize array full of false values
+    let { height, width } = canvas.current.getBoundingClientRect();
+    let rows = Math.floor(height / cellSize);
+    let cols = Math.floor(width / cellSize);
+    let arr = new Array(cols).fill(false);
+    for (let i = 0; i < arr.length; i++) {
+      arr[i] = new Array(rows).fill(false);
+    }
+    setCells(arr);
+    setGeneration(0);
+  }
+
   const simulateCycle = () => { //iterate through cells to determine next state
     let nextState = new Array(cells.length);
     for (let i = 0; i < cells.length; i++) {
@@ -56,6 +62,7 @@ export default function Game() {
       }
     }
     setCells(nextState);
+    setGeneration(generation + 1);
   }
 
   const getNeighbours = (x, y) => { //get alive (true) neighbours of cell at index x, y
@@ -128,6 +135,7 @@ export default function Game() {
       let copy = [...cells];
       copy[i][j] = !copy[i][j]
       setCells(copy);
+      setGeneration(0);
     }
   }
 
@@ -150,8 +158,10 @@ export default function Game() {
   return (
     <div className="gameArea">
       <div className="game">
+        <h3 className="generationCounter">Generation: {generation}</h3>
         <canvas ref={canvas} onClick={canvasClick} className="gameCanvas" width="1000px" height="500px"></canvas>
         <span className="gameControls">
+          <button className="controlButton" disabled={runSimulation} onClick={initializeCells}>Clear</button>
           <button className="controlButton" disabled={!runSimulation} onClick={toggleRunSimulation}>Stop</button>
           <button className="controlButton" disabled={runSimulation} onClick={toggleRunSimulation}>Play</button>
         </span>
