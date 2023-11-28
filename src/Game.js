@@ -1,37 +1,46 @@
 import { useEffect, useRef, useState } from "react"
 
 export default function Game() {
-  const cellSize = 10;
+  const cellSize = 25;
   const simulationPeriodMs = 500;
   const canvas = useRef();
   const [generation, setGeneration] = useState(0);
   const [cells, setCells] = useState();
+  const [nextCells, setNextCells] = useState();
   const [runSimulation, setRunSimulation] = useState(false);
 
   useEffect(() => {
-    initializeCells();
+    initialize();
   }, []);
 
-  useEffect(() => { //redraw immediately on cells change
-    if (cells) {
-      draw();
+  useEffect(() => {
+    if (cells && !runSimulation) {
+      setNextCells(simulateCycle(cells)); //user making placements, generate next cycle
     }
   }, [cells]);
 
-  useEffect(() => { //simulate next cycle simulationPeriodMs after cells change
+  useEffect(() => {
+    if (nextCells) { //draw whenever nextCells is updated
+      draw();
+    }
+  }, [nextCells])
+
+  useEffect(() => { //simulate next cycle simulationPeriodMs after nextCells is updated
     let simulationTimeout;
     if (runSimulation) {
       simulationTimeout = setTimeout(() => {
-        simulateCycle();
+        setCells(nextCells); //cells is now next cells
+        setNextCells(simulateCycle(nextCells)); //regenerate next cells
+        setGeneration(generation + 1);
       }, simulationPeriodMs);
     }
 
     return () => {
       clearTimeout(simulationTimeout); //clear timeout if user paused the simulation
     }
-  }, [runSimulation, cells]);
+  }, [runSimulation, nextCells]);
 
-  const initializeCells = () => { //initialize array full of false values
+  const initialize = () => { //initialize cells array full of false values and set generation to 0
     let { height, width } = canvas.current.getBoundingClientRect();
     let rows = Math.floor(height / cellSize);
     let cols = Math.floor(width / cellSize);
@@ -43,40 +52,39 @@ export default function Game() {
     setGeneration(0);
   }
 
-  const simulateCycle = () => { //iterate through cells to determine next state
-    let nextState = new Array(cells.length);
-    for (let i = 0; i < cells.length; i++) {
-      nextState[i] = new Array(cells[i].length).fill(false); //assume all are dead next state
-      for (let j = 0; j < cells[i].length; j++) {
-        let neighbours = getNeighbours(i, j);
-        if (cells[i][j] === true) { //cell alive
+  const simulateCycle = (seed) => { //create next cycle of the specified "seed" array
+    let next = new Array(seed.length);
+    for (let i = 0; i < seed.length; i++) {
+      next[i] = new Array(seed[i].length).fill(false); //assume all are dead next state
+      for (let j = 0; j < seed[i].length; j++) {
+        let neighbours = getNeighbours(seed, i, j);
+        if (seed[i][j] === true) { //cell alive
           if (neighbours === 2 || neighbours === 3) { //2 or 3 neighbours, stay alive 
-            nextState[i][j] = true;
+            next[i][j] = true;
           }
         }
         else { //cell dead
           if (neighbours === 3) { //3 neighbours, alive by reproduction
-            nextState[i][j] = true;
+            next[i][j] = true;
           }
         }
       }
     }
-    setCells(nextState);
-    setGeneration(generation + 1);
+    return next;
   }
 
-  const getNeighbours = (x, y) => { //get alive (true) neighbours of cell at index x, y
+  const getNeighbours = (arr, x, y) => { //get alive (true) neighbours of cell at index x, y
     let neighbours = 0;
     let minI = Math.max(x - 1, 0);
-    let maxI = Math.min(x + 1, cells.length - 1);
+    let maxI = Math.min(x + 1, arr.length - 1);
     let minJ = Math.max(y - 1, 0);
-    let maxJ = Math.min(y + 1, cells[x].length - 1);
+    let maxJ = Math.min(y + 1, arr[x].length - 1);
     for (let i = minI; i <= maxI; i++) {
       for (let j = minJ; j <= maxJ; j++) {
-        if (i == x && j == y) {
+        if (i === x && j === y) {
           continue;
         }
-        if (cells[i][j] == true) {
+        if (arr[i][j] === true) {
           neighbours++;
         }
       }
@@ -92,24 +100,24 @@ export default function Game() {
     drawGrid(context, width, height);
   }
 
-  const drawCells = (context) => {
+  const drawCells = (context) => { //iterate cells and draw alive ones
     for (let i = 0; i < cells.length; i++) {
       for (let j = 0; j < cells[i].length; j++) {
+        let { x, y } = indexToCoordinates(i, j);
         if (cells[i][j]) {
-          let { x, y } = indexToCoordinates(i, j);
-          drawRectAt(context, x, y);
+          drawRectAt(context, x, y, !nextCells[i][j]);
         }
       }
     }
   }
 
-  const drawRectAt = (context, x, y) => {
+  const drawRectAt = (context, x, y, isDying) => { //draw cell at location, colour red if it is dead next cycle
     context.beginPath();
-    context.fillStyle = "#33FF00";
+    context.fillStyle = isDying ? "#FF0000" : "#33FF00"; //red : green
     context.fillRect(x, y, cellSize, cellSize);
   }
 
-  const drawGrid = (context, width, height) => {
+  const drawGrid = (context, width, height) => { //draw grid lines
     context.lineWidth = "2";
     context.strokeStyle = "black";
     context.beginPath();
@@ -124,7 +132,7 @@ export default function Game() {
     context.stroke();
   }
 
-  const canvasClick = (e) => { //if simulation not running, allow user to add a cell at the clicked location
+  const canvasClick = (e) => { //if simulation not running, allow user to add or remove a cell at the clicked location
     if (!runSimulation) {
       const rect = canvas.current.getBoundingClientRect();
       let x = e.clientX - rect.left;
@@ -133,7 +141,7 @@ export default function Game() {
       y -= y % cellSize;
       let { i, j } = coordinatesToIndex(x, y);
       let copy = [...cells];
-      copy[i][j] = !copy[i][j]
+      copy[i][j] = !copy[i][j];
       setCells(copy);
       setGeneration(0);
     }
@@ -161,7 +169,7 @@ export default function Game() {
         <h3 className="generationCounter">Generation: {generation}</h3>
         <canvas ref={canvas} onClick={canvasClick} className="gameCanvas" width="1000px" height="500px"></canvas>
         <span className="gameControls">
-          <button className="controlButton" disabled={runSimulation} onClick={initializeCells}>Clear</button>
+          <button className="controlButton" disabled={runSimulation} onClick={initialize}>Clear</button>
           <button className="controlButton" disabled={!runSimulation} onClick={toggleRunSimulation}>Stop</button>
           <button className="controlButton" disabled={runSimulation} onClick={toggleRunSimulation}>Play</button>
         </span>
