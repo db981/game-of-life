@@ -13,6 +13,10 @@
   box-sizing: border-box;
 }
 
+button:hover {
+  cursor: pointer;
+}
+
 h1,
 h2,
 h3,
@@ -59,10 +63,32 @@ header {
 
 .game {
   display: grid;
-  grid-template-rows: auto 100px;
+  grid-template-rows: auto 60px;
   grid-template-columns: 1000px;
+  gap: 10px;
 }
 
-.gameCanvas {}
+.gameCanvas:hover {
+  cursor: pointer;
+}
 
-.gameControls>button {}
+.gameControls {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.controlButton {
+  width: 25%;
+
+  border: 3px solid #282828;
+
+  color: #33FF00;
+  background-color: #383838;
+
+  font-size: 20px;
+}
+
+.controlButton:hover,
+.controlButton:disabled {
+  background-color: #282828;
+}
