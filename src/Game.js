@@ -14,33 +14,24 @@ export default function Game() {
   }, []);
 
   useEffect(() => {
-    if (cells && !runSimulation) {
-      setNextCells(simulateCycle(cells)); //user making placements, generate next cycle
-    }
-  }, [cells]);
-
-  useEffect(() => {
-    if (nextCells) { //draw whenever nextCells is updated
+    if (cells) { //draw whenever cells is updated
       draw();
     }
-  }, [nextCells])
 
-  useEffect(() => { //simulate next cycle simulationPeriodMs after nextCells is updated
     let simulationTimeout;
-    if (runSimulation) {
+    if (runSimulation) { //simulate next cycle simulationPeriodMs after cells is updated
       simulationTimeout = setTimeout(() => {
         setCells(nextCells); //cells is now next cells
         setNextCells(simulateCycle(nextCells)); //regenerate next cells
         setGeneration(generation + 1);
       }, simulationPeriodMs);
     }
-
     return () => {
       clearTimeout(simulationTimeout); //clear timeout if user paused the simulation
     }
-  }, [runSimulation, nextCells]);
+  }, [runSimulation, cells]);
 
-  const initialize = () => { //initialize cells array full of false values and set generation to 0
+  const initialize = () => { //initialize cells/nextCells arrays full of false values and set generation to 0
     let { height, width } = canvas.current.getBoundingClientRect();
     let rows = Math.floor(height / cellSize);
     let cols = Math.floor(width / cellSize);
@@ -49,6 +40,7 @@ export default function Game() {
       arr[i] = new Array(rows).fill(false);
     }
     setCells(arr);
+    setNextCells(arr);
     setGeneration(0);
   }
 
@@ -143,6 +135,7 @@ export default function Game() {
       let copy = [...cells];
       copy[i][j] = !copy[i][j];
       setCells(copy);
+      setNextCells(simulateCycle(copy));
       setGeneration(0);
     }
   }
