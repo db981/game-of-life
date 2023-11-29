@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/game-of-life/static/css/main.3cf53780.css",
-    "main.js": "/game-of-life/static/js/main.f69d8680.js",
+    "main.css": "/game-of-life/static/css/main.36603105.css",
+    "main.js": "/game-of-life/static/js/main.58f08c04.js",
     "static/media/Retro Gaming.ttf": "/game-of-life/static/media/Retro Gaming.c1a52a602585b2d6baf8.ttf",
     "index.html": "/game-of-life/index.html",
-    "main.3cf53780.css.map": "/game-of-life/static/css/main.3cf53780.css.map",
-    "main.f69d8680.js.map": "/game-of-life/static/js/main.f69d8680.js.map"
+    "main.36603105.css.map": "/game-of-life/static/css/main.36603105.css.map",
+    "main.58f08c04.js.map": "/game-of-life/static/js/main.58f08c04.js.map"
   },
   "entrypoints": [
-    "static/css/main.3cf53780.css",
-    "static/js/main.f69d8680.js"
+    "static/css/main.36603105.css",
+    "static/js/main.58f08c04.js"
   ]
 }
