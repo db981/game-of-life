@@ -8,6 +8,8 @@ export default function Game() {
   const [cells, setCells] = useState();
   const [nextCells, setNextCells] = useState();
   const [runSimulation, setRunSimulation] = useState(false);
+  const nextCellsRef = useRef();
+  nextCellsRef.current = nextCells; //create a ref to nextCells so up to date state can be accessed in interval callback
 
   useEffect(() => {
     initialize();
@@ -17,19 +19,21 @@ export default function Game() {
     if (cells) { //draw whenever cells is updated
       draw();
     }
+  }, [cells]);
 
-    let simulationTimeout;
-    if (runSimulation) { //simulate next cycle simulationPeriodMs after cells is updated
-      simulationTimeout = setTimeout(() => {
-        setCells(nextCells); //cells is now next cells
-        setNextCells(simulateCycle(nextCells)); //regenerate next cells
-        setGeneration(generation + 1);
+  useEffect(() => {
+    let simulationInterval;
+    if (runSimulation) {
+      simulationInterval = setInterval(() => {
+        setCells(nextCellsRef.current); //set cells to nextCells
+        setNextCells((prev) => simulateCycle(prev)); //regenerate nextCells
+        setGeneration((prev) => prev + 1);
       }, simulationPeriodMs);
     }
     return () => {
-      clearTimeout(simulationTimeout); //clear timeout if user paused the simulation
+      clearInterval(simulationInterval); //clear interval if user paused the simulation
     }
-  }, [runSimulation, cells]);
+  }, [runSimulation]);
 
   const initialize = () => { //initialize cells/nextCells arrays full of false values and set generation to 0
     let { height, width } = canvas.current.getBoundingClientRect();
